@@ -1,0 +1,8 @@
+name: Flag
+version: '1.0-SNAPSHOT'
+main: eu.llamadev.flag.Flag
+api-version: '1.21'
+
+commands:
+  flag:
+    description: The main command
