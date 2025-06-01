@@ -14,10 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class ArenaManager {
 
@@ -92,49 +89,21 @@ public class ArenaManager {
         for (File file : files) {
             FileConfiguration config = YamlConfiguration.loadConfiguration(file);
             String name = config.getString("name");
-            Integer maxPlayers = config.getInt("maxPlayers");
-            Integer minPlayers = config.getInt("minPlayers");
+            int maxPlayers = config.getInt("maxPlayers");
+            int minPlayers = config.getInt("minPlayers");
 
-            if (plugin.getServer().getWorld("world") == null) {
-                Bukkit.getLogger().severe("World 'world' not found. Cannot load arena: " + name);
+            // Load arena positions
+            Location pos1 = getLocation(config, "pos1");
+            Location pos2 = getLocation(config, "pos2");
+
+            // Load lobby and spectator locations
+            Location lobbyLocation = getLocation(config, "lobbyLocation");
+            Location spectatorLocation = getLocation(config, "spectatorLocation");
+
+            if (pos1 == null || pos2 == null || lobbyLocation == null || spectatorLocation == null) {
+                Bukkit.getLogger().warning("[FLAG] Failed to load arena '" + name + "': Missing required locations.");
                 continue;
             }
-
-            String worldNameL = config.getString("lobbyLocation.world");
-            World worldL = Bukkit.getWorld(worldNameL);
-            double xL = config.getDouble("lobbyLocation.x");
-            double yL = config.getDouble("lobbyLocation.y");
-            double zL = config.getDouble("lobbyLocation.z");
-            float yawL = (float) config.getDouble("lobbyLocation.yaw");
-            float pitchL = (float) config.getDouble("lobbyLocation.pitch");
-
-            Location lobbyLocation = new Location(worldL, xL, yL, zL, yawL, pitchL);
-
-            String worldNameS = config.getString("spectatorLocation.world");
-            World worldS = Bukkit.getWorld(worldNameS);
-            double xS = config.getDouble("spectatorLocation.x");
-            double yS = config.getDouble("spectatorLocation.y");
-            double zS = config.getDouble("spectatorLocation.z");
-            float yawS = (float) config.getDouble("spectatorLocation.yaw");
-            float pitchS = (float) config.getDouble("spectatorLocation.pitch");
-
-            Location spectatorLocation = new Location(worldS, xS, yS, zS, yawS, pitchS);
-
-            String worldNameP1 = config.getString("pos1.world");
-            World worldP1 = Bukkit.getWorld(worldNameP1);
-            double xP1 = config.getDouble("pos1.x");
-            double yP1 = config.getDouble("pos1.y");
-            double zP1 = config.getDouble("pos1.z");
-
-            Location pos1 = new Location(worldP1, xP1, yP1, zP1);
-
-            String worldNameP2 = config.getString("pos2.world");
-            World worldP2 = Bukkit.getWorld(worldNameP2);
-            double xP2 = config.getDouble("pos2.x");
-            double yP2 = config.getDouble("pos2.y");
-            double zP2 = config.getDouble("pos2.z");
-
-            Location pos2 = new Location(worldP2, xP2, yP2, zP2);
 
             Arena arena = new Arena(name, pos1, pos2, spectatorLocation, lobbyLocation, maxPlayers, minPlayers);
 
@@ -145,17 +114,18 @@ public class ArenaManager {
                     if (teamSection == null) continue;
 
                     String colorString = teamSection.getString("color");
-                    int teamMaxPlayers = teamSection.getInt("maxPlayers");
-                    int teamMinPlayers = teamSection.getInt("minPlayers");
-                    Location spawn = getLocation(config, "teams." + teamName + ".spawn", plugin.getServer().getWorld("world"));
+                    int teamMaxPlayers = teamSection.getInt("maxPlayers"); // No default value
+                    int teamMinPlayers = teamSection.getInt("minPlayers"); // No default value
+                    Location spawn = getLocation(config, "teams." + teamName + ".spawn");
+                    Location flagLocation = getLocation(config, "teams." + teamName + ".flag");
 
                     try {
-                        ChatColor color = colorString.startsWith("#") ?
-                                ChatColor.valueOf(colorString) : ChatColor.valueOf(colorString.toUpperCase());
-
-                        Team team = new Team(teamName, color, teamMaxPlayers, teamMinPlayers, null, arena);
+                        ChatColor color = ChatColor.valueOf(colorString.toUpperCase());
+                        Team team = new Team(teamName, color, teamMaxPlayers, teamMinPlayers, spawn, arena);
                         arena.addTeam(team);
-
+                        team.setTeamMinPlayers(teamMinPlayers);
+                        team.setFlagLocation(flagLocation);
+                        team.setTeamMaxPlayers(teamMaxPlayers);
                     } catch (IllegalArgumentException e) {
                         Bukkit.getLogger().warning("[FLAG] Failed to load team '" + teamName + "' in arena '" + name + "': Invalid color '" + colorString + "'");
                     }
@@ -163,11 +133,55 @@ public class ArenaManager {
             }
 
             arenas.put(name, arena);
+            Bukkit.getLogger().info("[FLAG] Successfully loaded arena: " + name);
+
+
         }
+        debugFlagLocations();
+    }
+    public void debugFlagLocations() {
+        for (Arena arena : arenas.values()) {
+            Bukkit.getLogger().info("Debugging flag locations for arena: " + arena.getName());
+            for (Team team : arena.getTeams()) {
+                Location flagLocation = team.getFlagLocation();
+                if (flagLocation != null) {
+                    Bukkit.getLogger().info("Team: " + team.getName() + ", Flag Location: " +
+                            "World: " + flagLocation.getWorld().getName() +
+                            ", X: " + flagLocation.getX() +
+                            ", Y: " + flagLocation.getY() +
+                            ", Z: " + flagLocation.getZ());
+                } else {
+                    Bukkit.getLogger().warning("Team: " + team.getName() + " has no flag location set.");
+                }
+            }
+        }
+    }
+    private Location getLocation(FileConfiguration config, String path) {
+        if (!config.contains(path)) return null;
+
+        String worldName = config.getString(path + ".world");
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) return null;
+
+        double x = config.getDouble(path + ".x");
+        double y = config.getDouble(path + ".y");
+        double z = config.getDouble(path + ".z");
+        float yaw = (float) config.getDouble(path + ".yaw");
+        float pitch = (float) config.getDouble(path + ".pitch");
+
+        return new Location(world, x, y, z, yaw, pitch);
     }
 
     public Arena getArena(String name) {
         return this.arenas.get(name);
+    }
+    public Arena getArenaByPlayer(Player player) {
+        for (Arena arena : arenas.values()) {
+            if (arena.getPlayers().contains(player.getName())) {
+                return arena;
+            }
+        }
+        return null;
     }
 
     public boolean arenaExists(String name) {
@@ -539,6 +553,79 @@ public class ArenaManager {
         config.set(path + ".z", location.getZ());
         config.set(path + ".yaw", location.getYaw());
         config.set(path + ".pitch", location.getPitch());
+        try {
+            config.save(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void teleportPlayerToArenaLobby(Player player, Arena arena) {
+        if (arena == null) {
+            player.sendMessage("§cArena not found.");
+            return;
+        }
+        Location lobbyLocation = arena.getLobbyLocation();
+        if (lobbyLocation == null) {
+            player.sendMessage("§cLobby location not set for this arena.");
+            return;
+        }
+        player.teleport(lobbyLocation);
+        player.sendMessage("§aTeleported to arena lobby: " + arena.getName());
+    }
+    public void saveLuckyBlockLocation(Arena arena, Location location) {
+        File file = new File(plugin.getDataFolder(), "arenas/" + arena.getName() + ".yml");
+        if (!file.exists()) return;
+
+        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        List<String> luckyBlocks = config.getStringList("luckyBlocks");
+        luckyBlocks.add(location.getWorld().getName() + "," + location.getX() + "," + location.getY() + "," + location.getZ());
+        config.set("luckyBlocks", luckyBlocks);
+
+        try {
+            config.save(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<String> getLuckyBlockLocations(Arena arena) {
+        File file = new File(plugin.getDataFolder(), "arenas/" + arena.getName() + ".yml");
+        if (!file.exists()) return new ArrayList<>();
+
+        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        return config.getStringList("luckyBlocks");
+    }
+
+    public void saveLuckyBlockLocations(Arena arena, List<String> luckyBlocks) {
+        File file = new File(plugin.getDataFolder(), "arenas/" + arena.getName() + ".yml");
+        if (!file.exists()) return;
+
+        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        config.set("luckyBlocks", luckyBlocks);
+
+        try {
+            config.save(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void setFlagLocationInConfig(String arenaName, String teamName, Location location) {
+        File file = new File(plugin.getDataFolder(), "arenas/" + arenaName + ".yml");
+        if (!file.exists()) return;
+
+        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        String path = "teams." + teamName + ".flag";
+
+        if (location == null) {
+            config.set(path, null);
+        } else {
+            config.set(path + ".world", location.getWorld().getName());
+            config.set(path + ".x", location.getX());
+            config.set(path + ".y", location.getY());
+            config.set(path + ".z", location.getZ());
+        }
+
         try {
             config.save(file);
         } catch (Exception e) {

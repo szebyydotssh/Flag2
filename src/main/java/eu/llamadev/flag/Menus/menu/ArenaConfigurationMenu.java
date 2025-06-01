@@ -61,7 +61,10 @@ public class ArenaConfigurationMenu implements Menu {
         inv.setItem(24, createItem(Material.WHITE_BANNER, "&aTeam Configurations", Arrays.asList("&7Click to configure", "&7teams for this arena.")));
 
         inv.setItem(22, createItem(Material.BARRIER, "&cDelete Arena", Arrays.asList("&7Click to delete this arena.")));
-
+        inv.setItem(26, createItem(Material.YELLOW_STAINED_GLASS, "&aAdd Lucky Blocks", Arrays.asList(
+                "&7Click to get the LuckyBlock placer.",
+                "&7Arena: " + arena.getName()
+        )));
         player.openInventory(inv);
     }
 
@@ -114,6 +117,15 @@ public class ArenaConfigurationMenu implements Menu {
                 break;
             case "Team Configurations":
                 menuHandler.openMenu(player, new TeamConfigurationMenu(arena));
+                break;
+            case "Add Lucky Blocks":
+                ItemStack luckyBlock = createItem(Material.YELLOW_STAINED_GLASS, "&6Place LuckyBlock", List.of(
+                        "&7Arena: " + arena.getName(),
+                        "&7Team: <TeamName>", // Replace <TeamName> dynamically if needed
+                        "&eRight-Click to set the LuckyBlock."
+                ));
+                player.getInventory().addItem(luckyBlock);
+                player.sendMessage("You have been given the LuckyBlock placer for arena: " + arena.getName());
                 break;
             case "Delete Arena":
                 menuHandler.openMenu(player, new ConfirmDeleteMenu(arena));

@@ -1,8 +1,6 @@
 package eu.llamadev.flag.Commands;
 
-import eu.llamadev.flag.Commands.subcommands.CreateArena;
-import eu.llamadev.flag.Commands.subcommands.CreateTeam;
-import eu.llamadev.flag.Commands.subcommands.SetupCommand;
+import eu.llamadev.flag.Commands.subcommands.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -18,6 +16,8 @@ public class CommandManager implements CommandExecutor {
         subcommands.add(new CreateArena());
         subcommands.add(new SetupCommand());
         subcommands.add(new CreateTeam());
+        subcommands.add(new JoinArena());
+        subcommands.add(new LeaveCommand());
     }
 
     @Override

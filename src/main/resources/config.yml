@@ -4,3 +4,69 @@
 #
 
 config-version: 1.0
+
+arena-scoreboard:
+  title: '&l&6FLAG'
+  scores:
+    - ''
+    - '&eTime left: '
+    - '&a%time%'
+    - ''
+    - '%list_teams%'
+    - ''
+    - '&eArena: &c%arena%'
+    - '&eMatch ID: &c%match_id%'
+    - ''
+    - 'www.kulcharsebastian.eu'
+lobby-scoreboard:
+    title: '&l&6FLAG'
+    scores:
+        - ''
+        - '&fStatus: &a%status%'
+        - '&fPlayers: &a%players%'
+        - ''
+        - '&fArena: &a%arena%'
+        - '&fMatch ID: &a%match_id%'
+        - ''
+        - 'www.kulcharsebastian.eu'
+lucky-block:
+  wait: 3 # time in seconds before the lucky block replaces itself
+  '1':
+    type: 'item'
+    chance: 0.5
+    item:
+      id: 'DIAMOND_SWORD'
+      amount: 1
+      name: '&bLucky Sword'
+      lore:
+        - '&7A sword blessed with luck'
+        - '&eUse it wisely!'
+      enchantments:
+        - 'SHARPNESS:5'
+        - 'UNBREAKING:3'
+  '2':
+    name: '&aNausea'
+    description: '&7This is a lucky block'
+    type: 'effect'
+    chance: 0.5
+    effect:
+      name: 'NAUSEA'
+      level: 1
+      time: 0
+  '3':
+    name: '&aZombie'
+    description: '&7This is a lucky block'
+    type: 'mob'
+    chance: 0.5
+    mob:
+      name: '&aZombie'
+      amount: 1
+  '4':
+    name: '&aExplosion'
+    description: '&7This is a lucky block'
+    type: 'explosion'
+    chance: 0.5
+    explosion:
+      name: 'explosion'
+      radius: 1 # radius of the explosion
+      wait: 0 # if it is 0, it will explode instantly

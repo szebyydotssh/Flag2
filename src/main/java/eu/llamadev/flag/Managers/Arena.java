@@ -16,6 +16,7 @@ public class Arena {
     private ArrayList players;
     private Integer maxPlayers;
     private Integer minPlayers;
+    private int remainingTime;
 
     public Arena(String name, Location pos1, Location pos2, Location spectatorLocation, Location lobbyLocation, Integer maxPlayers, Integer minPlayers) {
         this.name = name;
@@ -102,7 +103,13 @@ public class Arena {
     public List<Team> getTeams() {
         return teams;
     }
+    public int getRemainingTime() {
+        return remainingTime;
+    }
 
+    public void setRemainingTime(int remainingTime) {
+        this.remainingTime = remainingTime;
+    }
     public void addTeam(Team team) {
         teams.add(team);
     }

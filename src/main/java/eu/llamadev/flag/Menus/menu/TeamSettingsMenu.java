@@ -48,7 +48,7 @@ public class TeamSettingsMenu implements Menu {
         inv.setItem(10, createItem(Material.COMPASS, "&aSet Team Spawn", List.of("&7Click to set the team's spawn.")));
         inv.setItem(12, createItem(Material.PLAYER_HEAD, "&aSet Max Players", List.of("&7Click to set the max players.")));
         inv.setItem(14, createItem(Material.PLAYER_HEAD, "&aSet Min Players", List.of("&7Click to set the min players.")));
-        inv.setItem(16, createItem(Material.ANVIL, "&aChange Team Name/Color", List.of("&7Click to change the team's name or color.")));
+        inv.setItem(16, createItem(Material.WHITE_BANNER, "&aSet Flag Location", List.of("&7Click to set the team's flag location.")));
         inv.setItem(22, createItem(Material.BARRIER, "&cDelete Team", List.of("&7Click to delete this team.")));
 
         player.openInventory(inv);
@@ -79,10 +79,9 @@ public class TeamSettingsMenu implements Menu {
                 player.sendMessage("§aType the min players in chat.");
                 plugin.getArenaManager().waitingForMinPlayersT.put(player.getUniqueId(), team);
                 break;
-            case "Change Team Name/Color":
+            case "Set Flag Location":
                 player.closeInventory();
-                player.sendMessage("§aType the new team name and color in chat (e.g., 'Blue BLUE').");
-                plugin.getArenaManager().waitingForNameChange.put(player.getUniqueId(), team);
+                giveFlagPlacer(player, team);
                 break;
             case "Delete Team":
                 player.closeInventory();
@@ -92,6 +91,16 @@ public class TeamSettingsMenu implements Menu {
         }
 
         e.setCancelled(true);
+    }
+
+    private void giveFlagPlacer(Player player, Team team) {
+        ItemStack flagPlacer = createItem(Material.WHITE_BANNER, "&6Place Flag", List.of(
+                "&7Arena: " + team.getArena().getName(),
+                "&7Team: " + team.getName(),
+                "&eRight-Click to set the flag location."
+        ));
+        player.getInventory().addItem(flagPlacer);
+        player.sendMessage("§aYou have been given the flag placer for team: " + team.getName());
     }
 
     private ItemStack createItem(Material mat, String name, List<String> lore) {

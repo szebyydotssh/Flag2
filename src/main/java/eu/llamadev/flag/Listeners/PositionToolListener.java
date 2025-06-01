@@ -2,6 +2,7 @@ package eu.llamadev.flag.Listeners;
 
 import eu.llamadev.flag.Flag;
 import eu.llamadev.flag.Managers.Arena;
+import eu.llamadev.flag.Managers.ArenaBlockManager;
 import eu.llamadev.flag.Utils.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -66,6 +67,9 @@ public class PositionToolListener implements Listener {
             case LEFT_CLICK_AIR:
                 plugin.getArenaManager().setArenaPos2(arena.getName(), playerLocation);
                 player.sendMessage("Pos2 set to your current location for arena: " + arenaName);
+                player.sendMessage("Arena saved to the files.");
+                ArenaBlockManager blockManager = new ArenaBlockManager(plugin.getDataFolder());
+                blockManager.saveArenaBlocks(arena);
                 break;
             default:
                 break;
